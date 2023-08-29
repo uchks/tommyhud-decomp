@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+ModSide: CLIENT
+FMLCorePluginContainsFMLMod: true
+ForceLoadAsMod: true
+FMLCorePlugin: codes.biscuit.tommyhud.asm.TommyHUDLoadingPlugin
+

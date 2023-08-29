@@ -1,0 +1,261 @@
+{
+  "enabledCrazyModes": [],
+  "disabledFeatures": [],
+  "colors": {
+    "FPS": 16733525,
+    "HORIZONTAL_SPEED": 16777215,
+    "VERTICAL_SPEED": -1,
+    "SUBSCRIBE_TO_TOMMYINNIT": -43691,
+    "VERTICAL_ACCELERATION": -1,
+    "POKIMANE_SUBSCRIPTION_TIER": -43521,
+    "HORIZONTAL_ACCELERATION": -1,
+    "BIOME": -11141291,
+    "ARROW_COUNT": -1,
+    "CPS_LEFT": -11141121,
+    "MEMORY": -43691,
+    "DIRECTION_FACING": -43521,
+    "CPS_RIGHT": -11141121,
+    "ARMOR_DISPLAY": -11141121,
+    "COORDINATES": -11141291,
+    "LIGHT_LEVEL": -171,
+    "DATE": -171,
+    "CLOCK": -171,
+    "CHUNK_COORDINATES": -11141291,
+    "PING": 5635925,
+    "POTION_DISPLAY": 16777045
+  },
+  "scales": {
+    "POKIMANE_SUBSCRIPTION_TIER": 0.17927414,
+    "KEYSTROKES": 0.38766304,
+    "POTION_DISPLAY": 0.2316796,
+    "ARMOR_DISPLAY": 0.11111111
+  },
+  "positions": {
+    "LIGHT_LEVEL": {
+      "x": {
+        "value": -1.1082968
+      },
+      "y": {
+        "value": -18.666718
+      }
+    },
+    "YAW": {
+      "x": {
+        "value": 2.6846278
+      },
+      "y": {
+        "value": 69.0
+      }
+    },
+    "CLOCK": {
+      "x": {
+        "value": -135.99994
+      },
+      "y": {
+        "value": 2.6666584
+      }
+    },
+    "HORIZONTAL_ACCELERATION": {
+      "x": {
+        "value": 2.7500193
+      },
+      "y": {
+        "value": 3.6666632
+      }
+    },
+    "MEMORY": {
+      "x": {
+        "value": -1.2501831
+      },
+      "y": {
+        "value": 19.133333
+      }
+    },
+    "PLAYERS": {
+      "x": {
+        "value": -1.4167888
+      },
+      "y": {
+        "value": 67.99992
+      }
+    },
+    "HORIZONTAL_SPEED": {
+      "x": {
+        "value": -1.3332926
+      },
+      "y": {
+        "value": 35.333347
+      }
+    },
+    "CHUNK_COORDINATES": {
+      "x": {
+        "value": 2.7916873
+      },
+      "y": {
+        "value": 117.966675
+      }
+    },
+    "FPS": {
+      "x": {
+        "value": 2.7666857
+      },
+      "y": {
+        "value": 101.66667
+      }
+    },
+    "KEYSTROKES": {
+      "x": {
+        "value": -194.03314
+      },
+      "y": {
+        "value": 3.0964127
+      }
+    },
+    "PING": {
+      "x": {
+        "value": -1.083313
+      },
+      "y": {
+        "value": -111.13336
+      }
+    },
+    "VERTICAL_ACCELERATION": {
+      "x": {
+        "value": 2.6666644
+      },
+      "y": {
+        "value": 19.999998
+      }
+    },
+    "SUBSCRIBE_TO_TOMMYINNIT": {
+      "x": {
+        "value": -0.99993885
+      },
+      "y": {
+        "value": -2.4666443
+      }
+    },
+    "CPS_LEFT": {
+      "x": {
+        "value": 2.6666625
+      },
+      "y": {
+        "value": 52.666668
+      }
+    },
+    "ARROW_COUNT": {
+      "x": {
+        "value": 72.70001
+      },
+      "y": {
+        "value": -39.666626
+      }
+    },
+    "DATE": {
+      "x": {
+        "value": -1.5583496
+      },
+      "y": {
+        "value": 2.7999964
+      }
+    },
+    "POKIMANE_SUBSCRIPTION_TIER": {
+      "x": {
+        "value": 180.42499
+      },
+      "y": {
+        "value": 2.6525497
+      }
+    },
+    "COORDINATES": {
+      "x": {
+        "value": -1.0001221
+      },
+      "y": {
+        "value": -67.7999
+      }
+    },
+    "VERTICAL_SPEED": {
+      "x": {
+        "value": -1.166626
+      },
+      "y": {
+        "value": 51.666645
+      }
+    },
+    "POTION_DISPLAY": {
+      "x": {
+        "value": 3.416668
+      },
+      "y": {
+        "value": -134.0637
+      }
+    },
+    "ARMOR_DISPLAY": {
+      "x": {
+        "value": 117.24999
+      },
+      "y": {
+        "value": -2.166626
+      }
+    },
+    "BIOME": {
+      "x": {
+        "value": -1.1667073
+      },
+      "y": {
+        "value": -35.133335
+      }
+    },
+    "DIRECTION_FACING": {
+      "x": {
+        "value": -1.1166178
+      },
+      "y": {
+        "value": -51.33333
+      }
+    },
+    "PITCH": {
+      "x": {
+        "value": 2.6846316
+      },
+      "y": {
+        "value": 85.33333
+      }
+    },
+    "CPS_RIGHT": {
+      "x": {
+        "value": 2.6666682
+      },
+      "y": {
+        "value": 36.333336
+      }
+    }
+  },
+  "anchorPoints": {
+    "LIGHT_LEVEL": "BOTTOM_RIGHT",
+    "ARROW_COUNT": "BOTTOM_MIDDLE",
+    "CLOCK": "TOP_RIGHT",
+    "DATE": "TOP_RIGHT",
+    "HORIZONTAL_ACCELERATION": "TOP_LEFT",
+    "MEMORY": "TOP_RIGHT",
+    "PLAYERS": "TOP_RIGHT",
+    "POKIMANE_SUBSCRIPTION_TIER": "TOP_LEFT",
+    "HORIZONTAL_SPEED": "TOP_RIGHT",
+    "CHUNK_COORDINATES": "TOP_LEFT",
+    "FPS": "TOP_LEFT",
+    "COORDINATES": "BOTTOM_RIGHT",
+    "KEYSTROKES": "TOP_RIGHT",
+    "VERTICAL_SPEED": "TOP_RIGHT",
+    "POTION_DISPLAY": "BOTTOM_LEFT",
+    "ARMOR_DISPLAY": "BOTTOM_MIDDLE",
+    "PING": "BOTTOM_RIGHT",
+    "BIOME": "BOTTOM_RIGHT",
+    "VERTICAL_ACCELERATION": "TOP_LEFT",
+    "DIRECTION_FACING": "BOTTOM_RIGHT",
+    "SUBSCRIBE_TO_TOMMYINNIT": "BOTTOM_RIGHT",
+    "CPS_RIGHT": "TOP_LEFT",
+    "CPS_LEFT": "TOP_LEFT"
+  },
+  "chromaFeatures": []
+}
