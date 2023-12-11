@@ -1,73 +1,77 @@
 package codes.biscuit.tommyhud.gui.buttons;
 
-import net.minecraft.client.gui.*;
-import codes.biscuit.tommyhud.*;
-import net.minecraft.client.*;
-import codes.biscuit.tommyhud.gui.*;
-import net.minecraft.client.renderer.*;
-import java.awt.*;
+import codes.biscuit.tommyhud.TommyHUD;
+import codes.biscuit.tommyhud.gui.MainGui;
+import java.awt.Color;
+import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.renderer.GlStateManager;
 
-public class ButtonRegular extends GuiButton
-{
-    private TommyHUD main;
-    private long timeOpened;
+public class ButtonRegular extends GuiButton {
+    private TommyHUD main = TommyHUD.getInstance();
+    private long timeOpened = System.currentTimeMillis();
     private Runnable onClickRunnable;
-    
-    public ButtonRegular(final double x, final double y, final int width, final int height, final String buttonText, final Runnable onClickRunnable) {
+
+    public ButtonRegular(double x, double y, int width, int height, String buttonText, Runnable onClickRunnable) {
         super(0, (int)x, (int)y, buttonText);
-        this.main = TommyHUD.getInstance();
-        this.timeOpened = System.currentTimeMillis();
-        this.field_146120_f = width;
-        this.field_146121_g = height;
+        this.width = width;
+        this.height = height;
         this.onClickRunnable = onClickRunnable;
     }
-    
-    public void func_146112_a(final Minecraft mc, final int mouseX, final int mouseY) {
-        float alphaMultiplier = 1.0f;
+
+    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+        float alphaMultiplier = 1.0F;
         int alpha;
         if (MainGui.isFadingIn()) {
-            final long timeSinceOpen = System.currentTimeMillis() - this.timeOpened;
-            final int fadeMilis = 500;
-            if (timeSinceOpen <= fadeMilis) {
-                alphaMultiplier = timeSinceOpen / (float)fadeMilis;
+            long timeSinceOpen = System.currentTimeMillis() - this.timeOpened;
+            int fadeMilis = 500;
+            if (timeSinceOpen <= (long)fadeMilis) {
+                alphaMultiplier = (float)timeSinceOpen / (float)fadeMilis;
             }
-            alpha = (int)(255.0f * alphaMultiplier);
-        }
-        else {
+
+            alpha = (int)(255.0F * alphaMultiplier);
+        } else {
             alpha = 255;
         }
-        this.field_146123_n = (mouseX >= this.field_146128_h && mouseY >= this.field_146129_i && mouseX < this.field_146128_h + this.field_146120_f && mouseY < this.field_146129_i + this.field_146121_g);
+
+        this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
         int boxAlpha = 100;
-        if (this.field_146123_n) {
+        if (this.hovered) {
             boxAlpha = 170;
         }
-        boxAlpha *= (int)alphaMultiplier;
-        final int boxColor = this.main.getUtils().getDefaultColor((float)boxAlpha);
-        GlStateManager.func_179147_l();
+
+        boxAlpha = (int)((float)boxAlpha * alphaMultiplier);
+        int boxColor = this.main.getUtils().getDefaultColor((float)boxAlpha);
+        GlStateManager.enableBlend();
         if (alpha < 4) {
             alpha = 4;
         }
-        int fontColor = new Color(224, 224, 224, alpha).getRGB();
-        if (this.field_146123_n) {
-            fontColor = new Color(255, 255, 160, alpha).getRGB();
+
+        int fontColor = (new Color(224, 224, 224, alpha)).getRGB();
+        if (this.hovered) {
+            fontColor = (new Color(255, 255, 160, alpha)).getRGB();
         }
-        this.drawButtonBoxAndText(boxColor, 1.0f, fontColor);
+
+        this.drawButtonBoxAndText(boxColor, 1.0F, fontColor);
     }
-    
-    private void drawButtonBoxAndText(final int boxColor, final float scale, final int fontColor) {
-        func_73734_a(this.field_146128_h, this.field_146129_i, this.field_146128_h + this.field_146120_f, this.field_146129_i + this.field_146121_g, boxColor);
-        GlStateManager.func_179094_E();
-        GlStateManager.func_179152_a(scale, scale, 1.0f);
-        this.main.getUtils().drawCenteredString(this.field_146126_j, (this.field_146128_h + this.field_146120_f / 2) / scale, (this.field_146129_i + (this.field_146121_g - 8.0f * scale) / 2.0f) / scale, fontColor);
-        GlStateManager.func_179084_k();
-        GlStateManager.func_179121_F();
+
+    private void drawButtonBoxAndText(int boxColor, float scale, int fontColor) {
+        func_73734_a(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + this.height, boxColor);
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(scale, scale, 1.0F);
+        this.main.getUtils().drawCenteredString(this.displayString, (float)(this.xPosition + this.width / 2) / scale, ((float)this.yPosition + ((float)this.height - 8.0F * scale) / 2.0F) / scale, fontColor);
+        GlStateManager.disableBlend();
+        GlStateManager.popMatrix();
     }
-    
-    public boolean func_146116_c(final Minecraft mc, final int mouseX, final int mouseY) {
-        final boolean pressed = mouseX >= this.field_146128_h && mouseY >= this.field_146129_i && mouseX < this.field_146128_h + this.field_146120_f && mouseY < this.field_146129_i + this.field_146121_g;
+
+    public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+        boolean pressed = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
         if (pressed) {
             this.onClickRunnable.run();
         }
+
         return pressed;
     }
 }
+ 

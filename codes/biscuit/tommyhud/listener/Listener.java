@@ -1,220 +1,236 @@
 package codes.biscuit.tommyhud.listener;
 
-import codes.biscuit.tommyhud.*;
-import codes.biscuit.tommyhud.misc.*;
-import net.minecraft.util.*;
-import net.minecraftforge.fml.common.gameevent.*;
-import codes.biscuit.tommyhud.gui.*;
-import net.minecraft.client.*;
-import net.minecraftforge.fml.common.eventhandler.*;
-import net.minecraftforge.client.event.*;
-import codes.biscuit.tommyhud.misc.scheduler.*;
-import net.minecraft.client.gui.*;
-import codes.biscuit.tommyhud.core.*;
-import net.minecraft.client.renderer.*;
+import codes.biscuit.tommyhud.TommyHUD;
+import codes.biscuit.tommyhud.core.CrazyMode;
+import codes.biscuit.tommyhud.gui.LocationEditGui;
+import codes.biscuit.tommyhud.gui.MainGui;
+import codes.biscuit.tommyhud.misc.GUIType;
+import codes.biscuit.tommyhud.misc.scheduler.SkyblockRunnable;
+import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.Vec3;
+import net.minecraftforge.client.event.MouseEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.Post;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
 
-public class Listener
-{
-    private TommyHUD main;
+public class Listener {
+    private TommyHUD main = TommyHUD.getInstance();
     private GUIType guiToOpen;
-    private int leftClickCPS;
-    private int rightClickCPS;
+    private int leftClickCPS = 0;
+    private int rightClickCPS = 0;
     private Vec3 lastSecondPosition;
-    
-    public Listener() {
-        this.main = TommyHUD.getInstance();
-        this.leftClickCPS = 0;
-        this.rightClickCPS = 0;
-    }
-    
+
     @SubscribeEvent
-    public void onRender(final TickEvent.RenderTickEvent e) {
+    public void onRender(RenderTickEvent e) {
         GuiScreen guiScreen = null;
         if (this.guiToOpen == GUIType.MAIN) {
             guiScreen = new MainGui();
-        }
-        else if (this.guiToOpen == GUIType.EDITING) {
+        } else if (this.guiToOpen == GUIType.EDITING) {
             guiScreen = new LocationEditGui();
         }
+
         if (guiScreen != null) {
-            Minecraft.func_71410_x().func_147108_a(guiScreen);
+            Minecraft.getMinecraft().displayGuiScreen(guiScreen);
         }
+
         this.guiToOpen = null;
     }
-    
+
     @SubscribeEvent
-    public void onRender(final RenderGameOverlayEvent.Post e) {
+    public void onRender(Post e) {
     }
-    
+
     @SubscribeEvent
-    public void onMouseEvent(final MouseEvent e) {
+    public void onMouseEvent(MouseEvent e) {
         if (e.buttonstate) {
             if (e.button == 0) {
                 ++this.leftClickCPS;
                 this.main.getScheduler().scheduleDelayedTask(new SkyblockRunnable() {
-                    @Override
                     public void run() {
                         Listener.this.leftClickCPS--;
                     }
                 }, 21);
-            }
-            else if (e.button == 1) {
+            } else if (e.button == 1) {
                 ++this.rightClickCPS;
                 this.main.getScheduler().scheduleDelayedTask(new SkyblockRunnable() {
-                    @Override
                     public void run() {
                         Listener.this.rightClickCPS--;
                     }
                 }, 21);
             }
         }
+
     }
-    
+
     @SubscribeEvent
-    public void ticker(final TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && Minecraft.func_71410_x().field_71439_g != null) {
-            final Vec3 position = Minecraft.func_71410_x().field_71439_g.func_174791_d();
+    public void ticker(ClientTickEvent event) {
+        if (event.phase == Phase.START && Minecraft.getMinecraft().thePlayer != null) {
+            final Vec3 position = Minecraft.getMinecraft().thePlayer.getPositionVector();
             this.main.getScheduler().scheduleDelayedTask(new SkyblockRunnable() {
-                @Override
                 public void run() {
                     Listener.this.lastSecondPosition = position;
                 }
             }, 10);
         }
+
     }
-    
+
     @SubscribeEvent
-    public void onRenderPre(final RenderGameOverlayEvent.Pre event) {
-        if (event.type == RenderGameOverlayEvent.ElementType.ALL) {
-            return;
-        }
-        final Minecraft mc = Minecraft.func_71410_x();
-        final ScaledResolution sr = new ScaledResolution(mc);
-        if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.UPSIDE_DOWN_MODE)) {
-            GlStateManager.func_179094_E();
-            GlStateManager.func_179109_b(sr.func_78326_a() / 2.0f, sr.func_78328_b() / 2.0f, 0.0f);
-            GlStateManager.func_179114_b(180.0f, 0.0f, 0.0f, 1.0f);
-            GlStateManager.func_179109_b(-sr.func_78326_a() / 2.0f, -sr.func_78328_b() / 2.0f, 0.0f);
-        }
-        if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.EARTHQUAKE_MODE)) {
-            float translation = 15.0f;
-            final int animationTime = (int)(System.currentTimeMillis() % 200L);
-            if (animationTime < 100) {
-                final float progress = animationTime / 100.0f;
-                translation *= progress;
+    public void onRenderPre(Pre event) {
+        if (event.type != ElementType.ALL) {
+            Minecraft mc = Minecraft.getMinecraft();
+            ScaledResolution sr = new ScaledResolution(mc);
+            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.UPSIDE_DOWN_MODE)) {
+                GlStateManager.pushMatrix();
+                GlStateManager.translate((float)sr.getScaledWidth() / 2.0F, (float)sr.getScaledHeight() / 2.0F, 0.0F);
+                GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+                GlStateManager.translate((float)(-sr.getScaledWidth()) / 2.0F, (float)(-sr.getScaledHeight()) / 2.0F, 0.0F);
             }
-            else {
-                final float progress = 1.0f - (animationTime - 100) / 100.0f;
-                translation *= progress;
-            }
-            translation -= 7.5;
-            GlStateManager.func_179094_E();
-            GlStateManager.func_179109_b(0.0f, translation, 0.0f);
-        }
-        if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.ROCKING_BOAT_MODE)) {
-            GlStateManager.func_179094_E();
-            GlStateManager.func_179109_b(sr.func_78326_a() / 2.0f, sr.func_78328_b() / 2.0f, 0.0f);
-            float rotation = 40.0f;
-            final int animationTime = (int)(System.currentTimeMillis() % 3000L);
-            if (animationTime < 1500) {
-                final float progress = animationTime / 1500.0f;
-                rotation *= progress;
-            }
-            else {
-                final float progress = 1.0f - (animationTime - 1500) / 1500.0f;
-                rotation *= progress;
-            }
-            rotation -= 20.0f;
-            GlStateManager.func_179114_b(rotation, 0.0f, 0.0f, 1.0f);
-            GlStateManager.func_179109_b(-sr.func_78326_a() / 2.0f, -sr.func_78328_b() / 2.0f, 0.0f);
-        }
-        if (event.type == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+
             if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.EARTHQUAKE_MODE)) {
-                float translation = 40.0f;
-                final int animationTime = (int)(System.currentTimeMillis() % 500L);
-                if (animationTime < 250) {
-                    final float progress = animationTime / 250.0f;
+                float translation = 15.0F;
+                int animationTime = (int)(System.currentTimeMillis() % 200L);
+                if (animationTime < 100) {
+                    float progress = (float)animationTime / 100.0F;
+                    translation *= progress;
+                } else {
+                    float progress = 1.0F - (float)(animationTime - 100) / 100.0F;
                     translation *= progress;
                 }
-                else {
-                    final float progress = 1.0f - (animationTime - 250) / 250.0f;
-                    translation *= progress;
+
+                translation = (float)((double)translation - 7.5D);
+                GlStateManager.pushMatrix();
+                GlStateManager.translate(0.0F, translation, 0.0F);
+            }
+
+            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.ROCKING_BOAT_MODE)) {
+                GlStateManager.pushMatrix();
+                GlStateManager.translate((float)sr.getScaledWidth() / 2.0F, (float)sr.getScaledHeight() / 2.0F, 0.0F);
+                float rotation = 40.0F;
+                int animationTime = (int)(System.currentTimeMillis() % 3000L);
+                if (animationTime < 1500) {
+                    float progress = (float)animationTime / 1500.0F;
+                    rotation *= progress;
+                } else {
+                    float progress = 1.0F - (float)(animationTime - 1500) / 1500.0F;
+                    rotation *= progress;
                 }
-                GlStateManager.func_179094_E();
-                GlStateManager.func_179109_b(translation, 0.0f, 0.0f);
+
+                rotation -= 20.0F;
+                GlStateManager.rotate(rotation, 0.0F, 0.0F, 1.0F);
+                GlStateManager.translate((float)(-sr.getScaledWidth()) / 2.0F, (float)(-sr.getScaledHeight()) / 2.0F, 0.0F);
             }
-            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.LARGE_GUI_AND_CROSSHAIR)) {
-                GlStateManager.func_179094_E();
-                GlStateManager.func_179109_b(sr.func_78326_a() / 2.0f, sr.func_78328_b() / 2.0f, 0.0f);
-                GlStateManager.func_179152_a(3.0f, 3.0f, 3.0f);
-                GlStateManager.func_179109_b(-sr.func_78326_a() / 2.0f, -sr.func_78328_b() / 2.0f, 0.0f);
+
+            if (event.type == ElementType.CROSSHAIRS) {
+                if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.EARTHQUAKE_MODE)) {
+                    float translation = 40.0F;
+                    int animationTime = (int)(System.currentTimeMillis() % 500L);
+                    if (animationTime < 250) {
+                        float progress = (float)animationTime / 250.0F;
+                        translation *= progress;
+                    } else {
+                        float progress = 1.0F - (float)(animationTime - 250) / 250.0F;
+                        translation *= progress;
+                    }
+
+                    GlStateManager.pushMatrix();
+                    GlStateManager.translate(translation, 0.0F, 0.0F);
+                }
+
+                if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.LARGE_GUI_AND_CROSSHAIR)) {
+                    GlStateManager.pushMatrix();
+                    GlStateManager.translate((float)sr.getScaledWidth() / 2.0F, (float)sr.getScaledHeight() / 2.0F, 0.0F);
+                    GlStateManager.scale(3.0F, 3.0F, 3.0F);
+                    GlStateManager.translate((float)(-sr.getScaledWidth()) / 2.0F, (float)(-sr.getScaledHeight()) / 2.0F, 0.0F);
+                }
+
+                if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.HELICOPTER_CROSSHAIR)) {
+                    GlStateManager.pushMatrix();
+                    GlStateManager.translate((float)sr.getScaledWidth() / 2.0F, (float)sr.getScaledHeight() / 2.0F, 0.0F);
+                    GlStateManager.rotate((float)(System.currentTimeMillis() % 500L) / 1.3888888F, 0.0F, 0.0F, 1.0F);
+                    GlStateManager.translate((float)(-sr.getScaledWidth()) / 2.0F, (float)(-sr.getScaledHeight()) / 2.0F, 0.0F);
+                }
             }
-            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.HELICOPTER_CROSSHAIR)) {
-                GlStateManager.func_179094_E();
-                GlStateManager.func_179109_b(sr.func_78326_a() / 2.0f, sr.func_78328_b() / 2.0f, 0.0f);
-                GlStateManager.func_179114_b(System.currentTimeMillis() % 500L / 1.3888888f, 0.0f, 0.0f, 1.0f);
-                GlStateManager.func_179109_b(-sr.func_78326_a() / 2.0f, -sr.func_78328_b() / 2.0f, 0.0f);
+
+            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.TINY_GUI)) {
+                GlStateManager.pushMatrix();
+                GlStateManager.translate((float)sr.getScaledWidth() / 2.0F, (float)sr.getScaledHeight() / 2.0F, 0.0F);
+                GlStateManager.scale(0.5F, 0.5F, 0.0F);
+                GlStateManager.translate((float)(-sr.getScaledWidth()) / 2.0F, (float)(-sr.getScaledHeight()) / 2.0F, 0.0F);
             }
-        }
-        if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.TINY_GUI)) {
-            GlStateManager.func_179094_E();
-            GlStateManager.func_179109_b(sr.func_78326_a() / 2.0f, sr.func_78328_b() / 2.0f, 0.0f);
-            GlStateManager.func_179152_a(0.5f, 0.5f, 0.0f);
-            GlStateManager.func_179109_b(-sr.func_78326_a() / 2.0f, -sr.func_78328_b() / 2.0f, 0.0f);
+
         }
     }
-    
+
     @SubscribeEvent
-    public void onRenderPost(final RenderGameOverlayEvent.Post event) {
-        if (event.type == RenderGameOverlayEvent.ElementType.EXPERIENCE || event.type == RenderGameOverlayEvent.ElementType.JUMPBAR) {
+    public void onRenderPost(Post event) {
+        if (event.type == ElementType.EXPERIENCE || event.type == ElementType.JUMPBAR) {
             this.main.getRenderer().drawAllElements();
         }
-        if (event.type == RenderGameOverlayEvent.ElementType.ALL) {
+
+        if (event.type == ElementType.ALL) {
             if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.CHROMA_SCREEN_MODE)) {
-                final Minecraft mc = Minecraft.func_71410_x();
-                final ScaledResolution sr = new ScaledResolution(mc);
-                this.main.getUtils().drawRect(0.0, 0.0, sr.func_78326_a(), sr.func_78328_b(), -1, true, 100);
+                Minecraft mc = Minecraft.getMinecraft();
+                ScaledResolution sr = new ScaledResolution(mc);
+                this.main.getUtils().drawRect(0.0D, 0.0D, (double)sr.getScaledWidth(), (double)sr.getScaledHeight(), -1, true, 100);
             }
-            return;
-        }
-        if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.UPSIDE_DOWN_MODE)) {
-            GlStateManager.func_179121_F();
-        }
-        if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.EARTHQUAKE_MODE)) {
-            GlStateManager.func_179121_F();
-        }
-        if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.ROCKING_BOAT_MODE)) {
-            GlStateManager.func_179121_F();
-        }
-        if (event.type == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+
+        } else {
+            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.UPSIDE_DOWN_MODE)) {
+                GlStateManager.popMatrix();
+            }
+
             if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.EARTHQUAKE_MODE)) {
-                GlStateManager.func_179121_F();
+                GlStateManager.popMatrix();
             }
-            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.LARGE_GUI_AND_CROSSHAIR)) {
-                GlStateManager.func_179121_F();
+
+            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.ROCKING_BOAT_MODE)) {
+                GlStateManager.popMatrix();
             }
-            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.HELICOPTER_CROSSHAIR)) {
-                GlStateManager.func_179121_F();
+
+            if (event.type == ElementType.CROSSHAIRS) {
+                if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.EARTHQUAKE_MODE)) {
+                    GlStateManager.popMatrix();
+                }
+
+                if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.LARGE_GUI_AND_CROSSHAIR)) {
+                    GlStateManager.popMatrix();
+                }
+
+                if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.HELICOPTER_CROSSHAIR)) {
+                    GlStateManager.popMatrix();
+                }
             }
-        }
-        if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.TINY_GUI)) {
-            GlStateManager.func_179121_F();
+
+            if (this.main.getConfigManager().getConfigValues().isCrazyModeEnabled(CrazyMode.TINY_GUI)) {
+                GlStateManager.popMatrix();
+            }
+
         }
     }
-    
-    public void setGuiToOpen(final GUIType guiToOpen) {
+
+    public void setGuiToOpen(GUIType guiToOpen) {
         this.guiToOpen = guiToOpen;
     }
-    
+
     public int getLeftClickCPS() {
         return this.leftClickCPS;
     }
-    
+
     public int getRightClickCPS() {
         return this.rightClickCPS;
     }
-    
+
     public Vec3 getLastSecondPosition() {
         return this.lastSecondPosition;
     }
 }
+ 

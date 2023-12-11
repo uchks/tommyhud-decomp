@@ -1,60 +1,59 @@
 package codes.biscuit.tommyhud.util.objects;
 
-import org.apache.commons.lang3.mutable.*;
-import org.apache.commons.lang3.builder.*;
+import codes.biscuit.tommyhud.util.objects.IntPair;
+import java.util.Map;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.mutable.MutableInt;
 
-public class IntPair
-{
+public class IntPair {
     private MutableInt x;
     private MutableInt y;
-    
-    public IntPair(final int x, final int y) {
+
+    public IntPair(int x, int y) {
         this.x = new MutableInt(x);
         this.y = new MutableInt(y);
     }
-    
+
     public int getX() {
         return this.x.getValue();
     }
-    
+
     public int getY() {
         return this.y.getValue();
     }
-    
-    public void setY(final int y) {
+
+    public void setY(int y) {
         this.y.setValue(y);
     }
-    
-    public void setX(final int x) {
+
+    public void setX(int x) {
         this.x.setValue(x);
     }
-    
-    @Override
-    public boolean equals(final Object obj) {
+
+    public boolean equals(Object obj) {
         if (obj == null) {
             return false;
-        }
-        if (obj == this) {
+        } else if (obj == this) {
             return true;
-        }
-        if (obj.getClass() != this.getClass()) {
+        } else if (obj.getClass() != this.getClass()) {
             return false;
+        } else {
+            IntPair chunkCoords = (IntPair)obj;
+            return (new EqualsBuilder()).append(this.getX(), chunkCoords.getX()).append(this.getY(), chunkCoords.getY()).isEquals();
         }
-        final IntPair chunkCoords = (IntPair)obj;
-        return new EqualsBuilder().append(this.getX(), chunkCoords.getX()).append(this.getY(), chunkCoords.getY()).isEquals();
     }
-    
-    @Override
+
     public int hashCode() {
-        return new HashCodeBuilder(83, 11).append(this.getX()).append(this.getY()).toHashCode();
+        return (new HashCodeBuilder(83, 11)).append(this.getX()).append(this.getY()).toHashCode();
     }
-    
-    @Override
+
     public String toString() {
         return this.getX() + "|" + this.getY();
     }
-    
+
     public IntPair cloneCoords() {
         return new IntPair(this.getX(), this.getY());
     }
 }
+ 

@@ -1,7 +1,9 @@
 package codes.biscuit.tommyhud.misc;
 
-public enum GUIType
-{
-    MAIN, 
+import java.util.Map;
+
+public enum GUIType {
+    MAIN,
     EDITING;
 }
+ 

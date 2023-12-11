@@ -1,16 +1,12 @@
 package codes.biscuit.tommyhud.asm.hooks;
 
-import net.minecraft.entity.*;
+import java.util.Map;
+import net.minecraft.entity.Entity;
 
-public class MinecraftHook
-{
-    private static long lastError;
-    
-    public static Entity getRenderViewEntity(final Entity renderViewEntity) {
+public class MinecraftHook {
+    private static long lastError = -1L;
+
+    public static Entity getRenderViewEntity(Entity renderViewEntity) {
         return renderViewEntity;
-    }
-    
-    static {
-        MinecraftHook.lastError = -1L;
     }
 }

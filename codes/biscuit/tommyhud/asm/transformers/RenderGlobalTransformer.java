@@ -1,51 +1,45 @@
 package codes.biscuit.tommyhud.asm.transformers;
 
-import codes.biscuit.tommyhud.asm.*;
-import codes.biscuit.tommyhud.asm.utils.*;
-import org.objectweb.asm.tree.*;
-import java.util.*;
+import codes.biscuit.tommyhud.asm.utils.TransformerClass;
+import codes.biscuit.tommyhud.asm.utils.TransformerMethod;
+import java.util.Iterator;
+import java.util.Map;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 
-public class RenderGlobalTransformer implements ITransformer
-{
-    private boolean foundEntitiesProfiler;
-    
-    public RenderGlobalTransformer() {
-        this.foundEntitiesProfiler = false;
-    }
-    
-    @Override
+public class RenderGlobalTransformer implements ITransformer {
+    private boolean foundEntitiesProfiler = false;
+
     public String[] getClassName() {
-        return new String[] { TransformerClass.RenderGlobal.getTransformerName() };
+        return new String[]{TransformerClass.RenderGlobal.getTransformerName()};
     }
-    
-    @Override
-    public void transform(final ClassNode classNode, final String name) {
-        for (final MethodNode methodNode : classNode.methods) {
+
+    public void transform(ClassNode classNode, String name) {
+        for(MethodNode methodNode : classNode.methods) {
             if (TransformerMethod.renderEntities.matches(methodNode)) {
-                final Iterator<AbstractInsnNode> iterator = (Iterator<AbstractInsnNode>)methodNode.instructions.iterator();
-                while (iterator.hasNext()) {
-                    final AbstractInsnNode abstractNode = iterator.next();
+                Iterator<AbstractInsnNode> iterator = methodNode.instructions.iterator();
+
+                while(iterator.hasNext()) {
+                    AbstractInsnNode abstractNode = (AbstractInsnNode)iterator.next();
                     if (abstractNode instanceof LdcInsnNode) {
-                        final LdcInsnNode ldcInsnNode = (LdcInsnNode)abstractNode;
-                        if (!ldcInsnNode.cst.equals("entities")) {
-                            continue;
+                        LdcInsnNode ldcInsnNode = (LdcInsnNode)abstractNode;
+                        if (ldcInsnNode.cst.equals("entities")) {
+                            this.foundEntitiesProfiler = true;
                         }
-                        this.foundEntitiesProfiler = true;
-                    }
-                    else {
-                        if (!this.foundEntitiesProfiler || !(abstractNode instanceof MethodInsnNode)) {
-                            continue;
-                        }
-                        final MethodInsnNode methodInsnNode = (MethodInsnNode)abstractNode;
+                    } else if (this.foundEntitiesProfiler && abstractNode instanceof MethodInsnNode) {
+                        MethodInsnNode methodInsnNode = (MethodInsnNode)abstractNode;
                         if (TransformerMethod.renderEntitySimple.matches(methodInsnNode)) {
-                            methodNode.instructions.insert(abstractNode, (AbstractInsnNode)new MethodInsnNode(184, "codes/biscuit/tommyhud/asm/hooks/RenderGlobalHook", "renderEntitySimple", "(" + TransformerClass.RenderManager.getName() + TransformerClass.Entity.getName() + "F)Z", false));
+                            methodNode.instructions.insert(abstractNode, new MethodInsnNode(184, "codes/biscuit/tommyhud/asm/hooks/RenderGlobalHook", "renderEntitySimple", "(" + TransformerClass.RenderManager.getName() + TransformerClass.Entity.getName() + "F)Z", false));
                             iterator.remove();
                             break;
                         }
-                        continue;
                     }
                 }
             }
         }
+
     }
 }

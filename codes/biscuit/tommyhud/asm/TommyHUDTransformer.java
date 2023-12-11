@@ -1,110 +1,116 @@
 package codes.biscuit.tommyhud.asm;
 
-import net.minecraft.launchwrapper.*;
-import org.apache.logging.log4j.*;
-import com.google.common.collect.*;
-import codes.biscuit.tommyhud.asm.transformers.*;
-import org.objectweb.asm.tree.*;
-import org.apache.commons.lang3.mutable.*;
-import org.objectweb.asm.*;
-import java.io.*;
-import java.util.*;
-import java.lang.reflect.*;
+import codes.biscuit.tommyhud.asm.transformers.RenderGlobalTransformer;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Map;
+import net.minecraft.launchwrapper.IClassTransformer;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
 
-public class TommyHUDTransformer implements IClassTransformer
-{
-    private static boolean DEOBFUSCATED;
+public class TommyHUDTransformer implements IClassTransformer {
+    private static boolean DEOBFUSCATED = false;
     private static boolean USING_NOTCH_MAPPINGS;
-    private Logger logger;
-    private final Multimap<String, ITransformer> transformerMap;
-    
+    private Logger logger = LogManager.getLogger("SkyblockAddons Transformer");
+    private final Multimap<String, ITransformer> transformerMap = ArrayListMultimap.create();
+
     public TommyHUDTransformer() {
-        this.logger = LogManager.getLogger("SkyblockAddons Transformer");
-        this.transformerMap = (Multimap<String, ITransformer>)ArrayListMultimap.create();
         this.registerTransformer(new RenderGlobalTransformer());
     }
-    
-    private void registerTransformer(final ITransformer transformer) {
-        for (final String cls : transformer.getClassName()) {
-            this.transformerMap.put((Object)cls, (Object)transformer);
+
+    private void registerTransformer(ITransformer transformer) {
+        for(String cls : transformer.getClassName()) {
+            this.transformerMap.put(cls, transformer);
         }
+
     }
-    
-    public byte[] transform(final String name, final String transformedName, final byte[] bytes) {
+
+    public byte[] transform(String name, String transformedName, byte[] bytes) {
         if (bytes == null) {
             return null;
+        } else {
+            Collection<ITransformer> transformers = this.transformerMap.get(transformedName);
+            if (transformers.isEmpty()) {
+                return bytes;
+            } else {
+                this.logger.info("Found {} transformers for {}", new Object[]{transformers.size(), transformedName});
+                ClassReader reader = new ClassReader(bytes);
+                ClassNode node = new ClassNode();
+                reader.accept(node, 8);
+                MutableInt classWriterFlags = new MutableInt(3);
+                transformers.forEach((transformer) -> {
+                    this.logger.info("Applying transformer {} on {}...", new Object[]{transformer.getClass().getName(), transformedName});
+                    transformer.transform(node, transformedName);
+                });
+                ClassWriter writer = new ClassWriter(classWriterFlags.getValue());
+
+                try {
+                    node.accept(writer);
+                } catch (Throwable var10) {
+                    this.logger.error("Exception when transforming " + transformedName + " : " + var10.getClass().getSimpleName());
+                    var10.printStackTrace();
+                    this.outputBytecode(transformedName, writer);
+                    return bytes;
+                }
+
+                this.outputBytecode(transformedName, writer);
+                return writer.toByteArray();
+            }
         }
-        final Collection<ITransformer> transformers = (Collection<ITransformer>)this.transformerMap.get((Object)transformedName);
-        if (transformers.isEmpty()) {
-            return bytes;
-        }
-        this.logger.info("Found {} transformers for {}", new Object[] { transformers.size(), transformedName });
-        final ClassReader reader = new ClassReader(bytes);
-        final ClassNode node = new ClassNode();
-        reader.accept((ClassVisitor)node, 8);
-        final MutableInt classWriterFlags = new MutableInt(3);
-        final ClassNode classNode;
-        transformers.forEach(transformer -> {
-            this.logger.info("Applying transformer {} on {}...", new Object[] { transformer.getClass().getName(), transformedName });
-            transformer.transform(classNode, transformedName);
-            return;
-        });
-        final ClassWriter writer = new ClassWriter((int)classWriterFlags.getValue());
-        try {
-            node.accept((ClassVisitor)writer);
-        }
-        catch (Throwable t) {
-            this.logger.error("Exception when transforming " + transformedName + " : " + t.getClass().getSimpleName());
-            t.printStackTrace();
-            this.outputBytecode(transformedName, writer);
-            return bytes;
-        }
-        this.outputBytecode(transformedName, writer);
-        return writer.toByteArray();
     }
-    
-    private void outputBytecode(final String transformedName, final ClassWriter writer) {
+
+    private void outputBytecode(String transformedName, ClassWriter writer) {
         if (isDeobfuscated()) {
             try {
-                final File bytecodeDirectory = new File("bytecode");
-                final File bytecodeOutput = new File(bytecodeDirectory, transformedName + ".class");
+                File bytecodeDirectory = new File("bytecode");
+                File bytecodeOutput = new File(bytecodeDirectory, transformedName + ".class");
                 if (!bytecodeDirectory.exists()) {
                     return;
                 }
+
                 if (!bytecodeOutput.exists()) {
                     bytecodeOutput.createNewFile();
                 }
-                final FileOutputStream os = new FileOutputStream(bytecodeOutput);
+
+                FileOutputStream os = new FileOutputStream(bytecodeOutput);
                 os.write(writer.toByteArray());
                 os.close();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException var6) {
+                var6.printStackTrace();
             }
         }
+
     }
-    
+
     public static boolean isDeobfuscated() {
-        return TommyHUDTransformer.DEOBFUSCATED;
+        return DEOBFUSCATED;
     }
-    
+
     public static boolean isUsingNotchMappings() {
-        return TommyHUDTransformer.USING_NOTCH_MAPPINGS;
+        return USING_NOTCH_MAPPINGS;
     }
-    
+
     static {
-        TommyHUDTransformer.DEOBFUSCATED = false;
         boolean foundLaunchClass = false;
+
         try {
-            final Class<?> launch = Class.forName("net.minecraft.launchwrapper.Launch");
-            final Field blackboardField = launch.getField("blackboard");
-            final Map<String, Object> blackboard = (Map<String, Object>)blackboardField.get(null);
-            TommyHUDTransformer.DEOBFUSCATED = blackboard.get("fml.deobfuscatedEnvironment");
+            Class<?> launch = Class.forName("net.minecraft.launchwrapper.Launch");
+            Field blackboardField = launch.getField("blackboard");
+            Map<String, Object> blackboard = (Map)blackboardField.get((Object)null);
+            DEOBFUSCATED = blackboard.get("fml.deobfuscatedEnvironment");
             foundLaunchClass = true;
+        } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException var4) {
         }
-        catch (ClassNotFoundException ex) {}
-        catch (NoSuchFieldException ex2) {}
-        catch (IllegalAccessException ex3) {}
-        TommyHUDTransformer.USING_NOTCH_MAPPINGS = !TommyHUDTransformer.DEOBFUSCATED;
+
+        USING_NOTCH_MAPPINGS = !DEOBFUSCATED;
     }
 }

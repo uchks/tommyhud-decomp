@@ -1,133 +1,132 @@
 package codes.biscuit.tommyhud.misc.scheduler;
 
-import net.minecraftforge.fml.common.gameevent.*;
-import net.minecraft.client.*;
-import java.util.*;
-import net.minecraftforge.fml.common.eventhandler.*;
+import codes.biscuit.tommyhud.misc.scheduler.ScheduledTask;
+import codes.biscuit.tommyhud.misc.scheduler.SkyblockRunnable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 
-public class Scheduler
-{
-    private final List<ScheduledTask> queuedTasks;
-    private final List<ScheduledTask> pendingTasks;
-    private final Object anchor;
-    private volatile long currentTicks;
-    private volatile long totalTicks;
-    
-    public Scheduler() {
-        this.queuedTasks = new ArrayList<ScheduledTask>();
-        this.pendingTasks = new ArrayList<ScheduledTask>();
-        this.anchor = new Object();
-        this.currentTicks = 0L;
-        this.totalTicks = 0L;
-    }
-    
+public class Scheduler {
+    private final List<ScheduledTask> queuedTasks = new ArrayList();
+    private final List<ScheduledTask> pendingTasks = new ArrayList();
+    private final Object anchor = new Object();
+    private volatile long currentTicks = 0L;
+    private volatile long totalTicks = 0L;
+
     public synchronized long getCurrentTicks() {
         return this.currentTicks;
     }
-    
+
     public synchronized long getTotalTicks() {
         return this.totalTicks;
     }
-    
+
     @SubscribeEvent
-    public void ticker(final TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
-            synchronized (this.anchor) {
+    public void ticker(ClientTickEvent event) {
+        if (event.phase == Phase.START) {
+            synchronized(this.anchor) {
                 ++this.totalTicks;
                 ++this.currentTicks;
             }
-            if (Minecraft.func_71410_x() != null) {
+
+            if (Minecraft.getMinecraft() != null) {
                 this.pendingTasks.removeIf(ScheduledTask::isCanceled);
                 this.pendingTasks.addAll(this.queuedTasks);
                 this.queuedTasks.clear();
+
                 try {
-                    for (final ScheduledTask scheduledTask : this.pendingTasks) {
-                        if (this.getTotalTicks() >= scheduledTask.getAddedTicks() + scheduledTask.getDelay()) {
+                    for(ScheduledTask scheduledTask : this.pendingTasks) {
+                        if (this.getTotalTicks() >= scheduledTask.getAddedTicks() + (long)scheduledTask.getDelay()) {
                             scheduledTask.start();
                             if (scheduledTask.isRepeating()) {
-                                if (scheduledTask.isCanceled()) {
-                                    continue;
+                                if (!scheduledTask.isCanceled()) {
+                                    scheduledTask.setDelay(scheduledTask.getPeriod());
                                 }
-                                scheduledTask.setDelay(scheduledTask.getPeriod());
-                            }
-                            else {
+                            } else {
                                 scheduledTask.cancel();
                             }
                         }
                     }
-                }
-                catch (Throwable ex) {
-                    ex.printStackTrace();
+                } catch (Throwable var5) {
+                    var5.printStackTrace();
                 }
             }
         }
+
     }
-    
-    public synchronized void cancel(final int id) {
-        this.pendingTasks.forEach(scheduledTask -> {
+
+    public synchronized void cancel(int id) {
+        this.pendingTasks.forEach((scheduledTask) -> {
             if (scheduledTask.getId() == id) {
                 scheduledTask.cancel();
             }
+
         });
     }
-    
-    public void cancel(final ScheduledTask task) {
+
+    public void cancel(ScheduledTask task) {
         task.cancel();
     }
-    
-    public ScheduledTask repeat(final SkyblockRunnable task) {
+
+    public ScheduledTask repeat(SkyblockRunnable task) {
         return this.scheduleRepeatingTask(task, 0, 1);
     }
-    
-    public ScheduledTask repeatAsync(final SkyblockRunnable task) {
+
+    public ScheduledTask repeatAsync(SkyblockRunnable task) {
         return this.runAsync(task, 0, 1);
     }
-    
-    public ScheduledTask runAsync(final SkyblockRunnable task) {
+
+    public ScheduledTask runAsync(SkyblockRunnable task) {
         return this.runAsync(task, 0);
     }
-    
-    public ScheduledTask runAsync(final SkyblockRunnable task, final int delay) {
+
+    public ScheduledTask runAsync(SkyblockRunnable task, int delay) {
         return this.runAsync(task, delay, 0);
     }
-    
-    public ScheduledTask runAsync(final SkyblockRunnable task, final int delay, final int period) {
-        final ScheduledTask scheduledTask = new ScheduledTask(task, delay, period, true);
+
+    public ScheduledTask runAsync(SkyblockRunnable task, int delay, int period) {
+        ScheduledTask scheduledTask = new ScheduledTask(task, delay, period, true);
         this.pendingTasks.add(scheduledTask);
         return scheduledTask;
     }
-    
-    public ScheduledTask scheduleTask(final SkyblockRunnable task) {
+
+    public ScheduledTask scheduleTask(SkyblockRunnable task) {
         return this.scheduleDelayedTask(task, 0);
     }
-    
-    public ScheduledTask scheduleDelayedTask(final SkyblockRunnable task, final int delay) {
+
+    public ScheduledTask scheduleDelayedTask(SkyblockRunnable task, int delay) {
         return this.scheduleRepeatingTask(task, delay, 0);
     }
-    
-    public ScheduledTask scheduleRepeatingTask(final SkyblockRunnable task, final int delay, final int period) {
+
+    public ScheduledTask scheduleRepeatingTask(SkyblockRunnable task, int delay, int period) {
         return this.scheduleRepeatingTask(task, delay, period, false);
     }
-    
-    public ScheduledTask scheduleRepeatingTask(final SkyblockRunnable task, final int delay, final int period, final boolean queued) {
-        final ScheduledTask scheduledTask = new ScheduledTask(task, delay, period, false);
+
+    public ScheduledTask scheduleRepeatingTask(SkyblockRunnable task, int delay, int period, boolean queued) {
+        ScheduledTask scheduledTask = new ScheduledTask(task, delay, period, false);
         if (queued) {
             this.queuedTasks.add(scheduledTask);
-        }
-        else {
+        } else {
             this.pendingTasks.add(scheduledTask);
         }
+
         return scheduledTask;
     }
-    
-    public void schedule(final ScheduledTask scheduledTask) {
+
+    public void schedule(ScheduledTask scheduledTask) {
         this.pendingTasks.add(scheduledTask);
     }
-    
-    public static void sleep(final long millis) {
+
+    public static void sleep(long millis) {
         try {
             Thread.sleep(millis);
+        } catch (InterruptedException var3) {
         }
-        catch (InterruptedException ex) {}
+
     }
 }
+ 

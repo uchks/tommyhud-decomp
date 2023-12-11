@@ -1,82 +1,82 @@
 package codes.biscuit.tommyhud.gui.buttons;
 
-import codes.biscuit.tommyhud.*;
-import codes.biscuit.tommyhud.core.*;
-import net.minecraft.client.*;
-import net.minecraft.client.renderer.*;
-import codes.biscuit.tommyhud.util.*;
-import net.minecraft.client.gui.*;
-import org.lwjgl.input.*;
+import codes.biscuit.tommyhud.TommyHUD;
+import codes.biscuit.tommyhud.core.Element;
+import codes.biscuit.tommyhud.gui.buttons.ButtonResize;
+import codes.biscuit.tommyhud.util.ColorCode;
+import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.input.Mouse;
 
-public class ButtonResize extends GuiButton
-{
+public class ButtonResize extends GuiButton {
     private static final int SIZE = 2;
-    private TommyHUD main;
+    private TommyHUD main = TommyHUD.getInstance();
     private Element element;
-    private Corner corner;
+    private ButtonResize.Corner corner;
     public float x;
     public float y;
     private float cornerOffsetX;
     private float cornerOffsetY;
-    
-    public ButtonResize(final float x, final float y, final Element element, final Corner corner) {
+
+    public ButtonResize(float x, float y, Element element, ButtonResize.Corner corner) {
         super(0, 0, 0, "");
-        this.main = TommyHUD.getInstance();
         this.element = element;
         this.corner = corner;
         this.x = x;
         this.y = y;
     }
-    
-    public void func_146112_a(final Minecraft mc, final int mouseX, final int mouseY) {
-        final float scale = this.main.getConfigManager().getConfigValues().getGuiScale(this.element);
-        GlStateManager.func_179094_E();
-        GlStateManager.func_179152_a(scale, scale, 1.0f);
-        this.field_146123_n = (mouseX >= (this.x - 2.0f) * scale && mouseY >= (this.y - 2.0f) * scale && mouseX < (this.x + 2.0f) * scale && mouseY < (this.y + 2.0f) * scale);
-        final int color = this.field_146123_n ? ColorCode.WHITE.getRGB() : ColorCode.WHITE.getColor(70).getRGB();
-        this.main.getUtils().drawRect(this.x - 2.0f, this.y - 2.0f, this.x + 2.0f, this.y + 2.0f, color);
-        GlStateManager.func_179121_F();
+
+    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+        float scale = this.main.getConfigManager().getConfigValues().getGuiScale(this.element);
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(scale, scale, 1.0F);
+        this.hovered = (float)mouseX >= (this.x - 2.0F) * scale && (float)mouseY >= (this.y - 2.0F) * scale && (float)mouseX < (this.x + 2.0F) * scale && (float)mouseY < (this.y + 2.0F) * scale;
+        int color = this.hovered ? ColorCode.WHITE.getRGB() : ColorCode.WHITE.getColor(70).getRGB();
+        this.main.getUtils().drawRect((double)(this.x - 2.0F), (double)(this.y - 2.0F), (double)(this.x + 2.0F), (double)(this.y + 2.0F), color);
+        GlStateManager.popMatrix();
     }
-    
-    public boolean func_146116_c(final Minecraft mc, final int mouseX, final int mouseY) {
-        final ScaledResolution sr = new ScaledResolution(mc);
-        final float minecraftScale = (float)sr.func_78325_e();
-        final float floatMouseX = Mouse.getX() / minecraftScale;
-        final float floatMouseY = (mc.field_71440_d - Mouse.getY()) / minecraftScale;
+
+    public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+        ScaledResolution sr = new ScaledResolution(mc);
+        float minecraftScale = (float)sr.getScaleFactor();
+        float floatMouseX = (float)Mouse.getX() / minecraftScale;
+        float floatMouseY = (float)(mc.displayHeight - Mouse.getY()) / minecraftScale;
         this.cornerOffsetX = floatMouseX;
         this.cornerOffsetY = floatMouseY;
-        return this.field_146123_n;
+        return this.hovered;
     }
-    
-    public Corner getCorner() {
+
+    public ButtonResize.Corner getCorner() {
         return this.corner;
     }
-    
+
     public float getCornerOffsetX() {
         return this.cornerOffsetX;
     }
-    
+
     public float getCornerOffsetY() {
         return this.cornerOffsetY;
     }
-    
+
     public Element getElement() {
         return this.element;
     }
-    
+
     public float getX() {
         return this.x;
     }
-    
+
     public float getY() {
         return this.y;
     }
-    
-    public enum Corner
-    {
-        TOP_LEFT, 
-        TOP_RIGHT, 
-        BOTTOM_RIGHT, 
+
+    public static enum Corner {
+        TOP_LEFT,
+        TOP_RIGHT,
+        BOTTOM_RIGHT,
         BOTTOM_LEFT;
     }
 }

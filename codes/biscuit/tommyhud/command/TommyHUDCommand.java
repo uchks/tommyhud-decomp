@@ -1,29 +1,31 @@
 package codes.biscuit.tommyhud.command;
 
-import java.util.*;
-import net.minecraft.command.*;
-import codes.biscuit.tommyhud.*;
-import codes.biscuit.tommyhud.misc.*;
+import codes.biscuit.tommyhud.TommyHUD;
+import codes.biscuit.tommyhud.misc.GUIType;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandSender;
 
-public class TommyHUDCommand extends CommandBase
-{
-    public String func_71517_b() {
+public class TommyHUDCommand extends CommandBase {
+    public String getCommandName() {
         return "tommyhud";
     }
-    
-    public List<String> func_71514_a() {
+
+    public List<String> getCommandAliases() {
         return Collections.singletonList("th");
     }
-    
-    public void func_71515_b(final ICommandSender sender, final String[] args) {
+
+    public void processCommand(ICommandSender sender, String[] args) {
         TommyHUD.getInstance().getListener().setGuiToOpen(GUIType.MAIN);
     }
-    
-    public String func_71518_a(final ICommandSender sender) {
+
+    public String getCommandUsage(ICommandSender sender) {
         return null;
     }
-    
-    public int func_82362_a() {
+
+    public int getRequiredPermissionLevel() {
         return 0;
     }
 }

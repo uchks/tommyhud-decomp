@@ -1,19 +1,20 @@
 package codes.biscuit.tommyhud.asm;
 
-import org.objectweb.asm.tree.*;
+import java.util.Map;
+import org.objectweb.asm.tree.ClassNode;
 
-public interface ITransformer
-{
+public interface ITransformer {
     String[] getClassName();
-    
-    void transform(final ClassNode p0, final String p1);
-    
-    default boolean nameMatches(final String method, final String... names) {
-        for (final String name : names) {
+
+    void transform(ClassNode var1, String var2);
+
+    default boolean nameMatches(String method, String... names) {
+        for(String name : names) {
             if (method.equals(name)) {
                 return true;
             }
         }
+
         return false;
     }
 }
